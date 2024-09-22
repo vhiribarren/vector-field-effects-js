@@ -23,7 +23,9 @@ SOFTWARE.
 */
 precision highp float;
 
+uniform float uSpeedStep;
 uniform float uTimeAccMs;
+uniform float uTimeDeltaMs;
 uniform sampler2D uPositions;
 
 layout(location = 0) out vec4 outputValue;
@@ -47,12 +49,13 @@ float average_noise_smoothstep(vec2 scaled_uv) {
 
 
 vec2 vector_field(vec2 uv) {
-    float r = 2.0*PI*average_noise_smoothstep(uv*0.0001);
+    float r = 2.0*PI*average_noise_smoothstep(uv);
     return vec2(cos(r), sin(r));
     //return normalize(vec2(1.0, cos(PI*uv.y/size.y)));
 }
 
 
 void main() {
-  outputValue = texelFetch(uPositions, ivec2(gl_FragCoord.x, 0), 0) + vec4(vector_field(gl_FragCoord.xy), 0.0, 0.0)*0.01;
+  vec4 particlePos = texelFetch(uPositions, ivec2(gl_FragCoord.x, 0), 0);
+  outputValue = particlePos + vec4(vector_field(particlePos.xy), 0.0, 0.0)*uSpeedStep*uTimeDeltaMs;
 }

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+uniform float uPointSize;
 uniform sampler2D uPositions;
 out vec4 color;
 
@@ -32,6 +33,6 @@ float random(vec2 uv) {
 void main() {
     vec3 position = texelFetch(uPositions, ivec2(gl_InstanceID, 0), 0).xyz;
     gl_Position =  vec4(position, 1.0);
-    gl_PointSize = 3.0;
+    gl_PointSize = uPointSize;
     color = vec4(vec3(random(vec2(0.0, float(gl_InstanceID)))), 1.0);
 }

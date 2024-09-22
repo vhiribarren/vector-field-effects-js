@@ -34,9 +34,11 @@ const FShaderInitPos = await textFileLoader("./frg_init_positions.glsl");
 const FShaderUpdatePos = await textFileLoader("./frg_update_positions.glsl");
 
 
-
 // Global parameters managed by Tweakpane
+/////////////////////////////////////////
+
 const params = {
+    entityCount: 16384,
     canvasResolution: 50, // In percentage
     canvasScale: true,
     canvasSmooth: false,
@@ -45,24 +47,25 @@ const params = {
     paletteContrast: { x: 1.0, y: 1.0, z: 1.0 },
     paletteFreq: { x: 2.0, y: 0.5, z: 0.5 },
     palettePhase: { x: 0.5, y: 0.5, z: 0.5 },
-    transparentRange: {min: 0.8, max: 1.0},
     backgroundColor:  {r: 0, g: 0, b: 0, a: 1.0},
+    speedStep: 0.0001,
+    pointSize: 5.0,
     animRun: true,
-    verticalForce: 5.0,
-    dissipationMinimum: 0.01,
-    diffusionCoeff: 6,
 };
 
 
-const entityCount = 16384;//5;//1000;
-const canvasWidth = 800;
-const canvasHeight = 600;
+// Prepre ThreeJS objects
+/////////////////////////
+
+const camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0.1, 10);
+camera.position.z = 1;
+const renderer = new THREE.WebGLRenderer({});
+document.body.appendChild(renderer.domElement);
 const canvasGeometry = new THREE.PlaneGeometry(1, 1);
 
-let inputRenderTarget = new THREE.WebGLRenderTarget(entityCount, 1, {type: THREE.FloatType});
-let outputRenderTarget = new THREE.WebGLRenderTarget(entityCount, 1, {type: THREE.FloatType});
-let displayRendererTarget = new THREE.WebGLRenderTarget(canvasWidth, canvasHeight);
-
+let inputRenderTarget = new THREE.WebGLRenderTarget(params.entityCount, 1, {type: THREE.FloatType});
+let outputRenderTarget = new THREE.WebGLRenderTarget(params.entityCount, 1, {type: THREE.FloatType});
+let displayRendererTarget = new THREE.WebGLRenderTarget(null, null);
 
 const initMaterial = new THREE.ShaderMaterial({
     fragmentShader: FShaderInitPos,
@@ -78,12 +81,14 @@ const updateMaterial = new THREE.ShaderMaterial({
     uniforms: {
         uPositions: { value: outputRenderTarget.texture},
         uTimeAccMs: { value: 0},
+        uTimeDeltaMs: { value: 0},
+        uSpeedStep: { value: 0},
     }
 });
 updateScene.add(new THREE.Mesh(canvasGeometry, updateMaterial));
 
 const drawGeometry = new THREE.InstancedBufferGeometry();
-drawGeometry.instanceCount = entityCount;
+drawGeometry.instanceCount = params.entityCount;
 drawGeometry.setAttribute( 'position',  new THREE.Float32BufferAttribute([0.0, 0.0, 0.0], 3 ));
 const drawMaterial = new THREE.RawShaderMaterial({
     vertexShader: VShaderDots,
@@ -91,39 +96,62 @@ const drawMaterial = new THREE.RawShaderMaterial({
     glslVersion: THREE.GLSL3,
     uniforms: {
         uPositions: { value: outputRenderTarget.texture},
+        uPointSize: { value: 0},
     }
 });
 const drawScene = new THREE.Scene();
 drawScene.add(new THREE.Points(drawGeometry, drawMaterial ));
 
 const finalScene = new THREE.Scene();
-finalScene.add(new THREE.Mesh(canvasGeometry, new THREE.MeshBasicMaterial({map: displayRendererTarget.texture})));
-
-const camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0.1, 10);
-camera.position.z = 1;
-const renderer = new THREE.WebGLRenderer({});
-document.body.appendChild(renderer.domElement);
+const finalMaterial = new THREE.MeshBasicMaterial({map: displayRendererTarget.texture});
+finalScene.add(new THREE.Mesh(canvasGeometry, finalMaterial));
 
 
-renderer.setSize(640, 480);
 
+// To display FPS statistics
+const stats = new Stats()
+document.body.appendChild(stats.dom);
+
+// Configure elements depending on window and Tweakpane
+const applyDisplayParams = () => {
+    const newWidth = window.innerWidth * params.canvasResolution / 100;
+    const newHeight = window.innerHeight * params.canvasResolution / 100;
+    displayRendererTarget = new THREE.WebGLRenderTarget(newWidth, newHeight);
+    finalMaterial.map = displayRendererTarget.texture;
+    renderer.setSize(newWidth, newHeight);
+    if (params.canvasScale) {
+        renderer.domElement.style.cssText = "width: 100%; margin:0; padding: 0;";
+        if (!params.canvasSmooth) {
+            renderer.domElement.style.cssText += "image-rendering: pixelated"
+        }
+    }
+    updateMaterial.uniforms.uSpeedStep.value = params.speedStep;
+    drawMaterial.uniforms.uPointSize.value = params.pointSize;
+    stats.dom.hidden = !params.fpsDisplay;
+    renderer.setClearColor(new THREE.Color(params.backgroundColor.r, params.backgroundColor.g, params.backgroundColor.b), params.backgroundColor.a);
+}
+
+
+
+// Rendering
+////////////
+
+applyDisplayParams();
 renderer.setRenderTarget(outputRenderTarget);
 renderer.render(initScene, camera);
 
 let timeAcc = 0;
 let timeDatePrev =  Date.now();
-
-
-
 renderer.setAnimationLoop(() => {
     const timeDateCurrent = Date.now();
-    const timeDelta =  timeDateCurrent - timeDatePrev; //params.animRun ? timeDateCurrent - timeDatePrev : 0.0;
+    const timeDelta =  params.animRun ? timeDateCurrent - timeDatePrev : 0.0;
     timeAcc += timeDelta;
     timeDatePrev = timeDateCurrent;
 
     [inputRenderTarget, outputRenderTarget] = [outputRenderTarget, inputRenderTarget];
     updateMaterial.uniforms.uPositions.value = inputRenderTarget.textures[0];
     updateMaterial.uniforms.uTimeAccMs.value = timeAcc;
+    updateMaterial.uniforms.uTimeDeltaMs.value = timeDelta;
     renderer.setRenderTarget(outputRenderTarget);
     renderer.render(updateScene, camera);
     
@@ -135,72 +163,21 @@ renderer.setAnimationLoop(() => {
     renderer.setRenderTarget(null);
     renderer.render(finalScene, camera);
 
-});
-
-
-
-
-/*
-
-// To display FPS statistics
-const stats = new Stats()
-document.body.appendChild(stats.dom);
-// Step 1 rendering
-const materialStep1 = new THREE.RawShaderMaterial({
-    vertexShader: VShaderDots,
-    fragmentShader: FShaderDots,
-    glslVersion: THREE.GLSL3,
-    uniforms: {
-        uWidth: { value: 1920.0 },
-        uHeight: { value: 1200.0 },
-    }
-});
-const sceneStep1 = new THREE.Scene();
-sceneStep1.add(new THREE.Points(geometry, materialStep1 ));
-
-
-
-// Configure elements depending on window and Tweakpane
-const applyDisplayParams = () => {
-    const paramPoint3ToVector3 = (paramPoint3Val) => new THREE.Vector3(
-        paramPoint3Val.x, paramPoint3Val.y, paramPoint3Val.z
-    );
-    const newWidth = window.innerWidth * params.canvasResolution / 100;
-    const newHeight = window.innerHeight * params.canvasResolution / 100;
-    renderer.setSize(newWidth, newHeight);
-    if (params.canvasScale) {
-        renderer.domElement.style.cssText = "width: 100%; margin:0; padding: 0;";
-        if (!params.canvasSmooth) {
-            renderer.domElement.style.cssText += "image-rendering: pixelated"
-        }
-    }
-    stats.dom.hidden = !params.fpsDisplay;
-
-    renderer.autoClear = true;
-    renderer.setClearColor(new THREE.Color(params.backgroundColor.r, params.backgroundColor.g, params.backgroundColor.b), params.backgroundColor.a);
-}
-applyDisplayParams();
-
-// Rendering
-/*
-let timeAcc = 0;
-let timeDatePrev =  Date.now();
-renderer.setAnimationLoop(() => {
-    renderer.render(sceneStep1, camera);
     if (params.fpsDisplay) {
         stats.update();
     }
 });
 
+
 window.addEventListener("resize", (_event) => {
     //Disabled for now
     //applyDisplayParams();
 });
-*/
+
 
 // Configure Tweakpane
 //////////////////////
-/*
+
 const pane = new Pane({
     title: "Parameters",
     expanded: true,
@@ -253,28 +230,24 @@ colorPaletteFolder.addBinding(params, "palettePhase", {
     y: { min: 0, max: 1 },
     z: { min: 0, max: 1 },
 });
-colorPaletteFolder.addBinding(params, "transparentRange", {
-    label: "Transparent Range",
-    min: 0.0,
-    max: 1.0,
-});
 colorPaletteFolder.addBinding(params, "backgroundColor", {
     label: "Background Color",
     picker: 'inline',
     color: {type: "float", alpha: true},
 });
 
-const fireFolder = pane.addFolder({
-    title: "Fire Params",
+const simulationFolder = pane.addFolder({
+    title: "Simulation",
     expanded: true,
 });
-fireFolder.addBinding(params, "diffusionCoeff", { label: "Diffusion Coeff", min: 0.0 });
-fireFolder.addBinding(params, "verticalForce", { label: "Vertical Force", min: 1.0 });
-fireFolder.addBinding(params, "dissipationMinimum", { label: "Dissipation Minimum", min: 0.0, max: 0.1, step: 0.001 });
+simulationFolder.addBinding(params, "speedStep");
+simulationFolder.addBinding(params, "pointSize", {
+    min: 0,
+    label: "Point Size",
+});
 
 const animationFolder = pane.addFolder({
     title: "Animation",
     expanded: true,
 });
 animationFolder.addBinding(params, "animRun", { label: "Run Animation" });
-*/
