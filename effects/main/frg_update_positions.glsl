@@ -49,7 +49,7 @@ float average_noise_smoothstep(vec2 scaled_uv) {
 
 
 vec2 vector_field(vec2 uv) {
-    float r = 2.0*PI*average_noise_smoothstep(uv);
+    float r = 2.0*PI*average_noise_smoothstep(10.0*uv);
     return vec2(cos(r), sin(r));
     //return normalize(vec2(1.0, cos(PI*uv.y/size.y)));
 }
