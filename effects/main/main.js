@@ -39,7 +39,7 @@ const FShaderCanvasPreprocess = await textFileLoader("./frg_canvas_preprocessing
 
 const params = {
     entityCount: 16384,
-    canvasResolution: 50, // In percentage
+    canvasResolution: 100, // In percentage
     canvasScale: true,
     canvasSmooth: false,
     fpsDisplay: false,
@@ -49,7 +49,7 @@ const params = {
     palettePhase: { x: 0.5, y: 0.5, z: 0.5 },
     backgroundColor:  {r: 0, g: 0, b: 0, a: 1.0},
     speedStep: 0.0001,
-    pointSize: 5.0,
+    pointSize: 2.0,
     animRun: true,
 };
 
@@ -98,6 +98,11 @@ const drawMaterial = new THREE.RawShaderMaterial({
     uniforms: {
         uPositions: { value: outputPositionsRenderTarget.texture},
         uPointSize: { value: 0},
+        uTotalPoints: { value: 0},
+        uPaletteLuminosity: { value: new THREE.Vector3(0.0, 0.0, 0.0) },
+        uPaletteContrast: { value: new THREE.Vector3(0.0, 0.0, 0.0) },
+        uPaletteFreq: { value: new THREE.Vector3(0.0, 0.0, 0.0) },
+        uPalettePhase: { value: new THREE.Vector3(0.0, 0.0, 0.0) },
     }
 });
 const drawScene = new THREE.Scene();
@@ -126,6 +131,9 @@ document.body.appendChild(stats.dom);
 
 // Configure elements depending on window and Tweakpane
 const applyDisplayParams = () => {
+    const paramPoint3ToVector3 = (paramPoint3Val) => new THREE.Vector3(
+        paramPoint3Val.x, paramPoint3Val.y, paramPoint3Val.z
+    );
     const newWidth = window.innerWidth * params.canvasResolution / 100;
     const newHeight = window.innerHeight * params.canvasResolution / 100;
     inputDisplayRenderTarget = new THREE.WebGLRenderTarget(newWidth, newHeight);
@@ -138,6 +146,11 @@ const applyDisplayParams = () => {
             renderer.domElement.style.cssText += "image-rendering: pixelated"
         }
     }
+    drawMaterial.uniforms.uTotalPoints.value = params.entityCount;
+    drawMaterial.uniforms.uPaletteLuminosity.value = paramPoint3ToVector3(params.paletteLuminosity);
+    drawMaterial.uniforms.uPaletteContrast.value = paramPoint3ToVector3(params.paletteContrast);
+    drawMaterial.uniforms.uPaletteFreq.value = paramPoint3ToVector3(params.paletteFreq);
+    drawMaterial.uniforms.uPalettePhase.value = paramPoint3ToVector3(params.palettePhase);
     updateMaterial.uniforms.uSpeedStep.value = params.speedStep;
     drawMaterial.uniforms.uPointSize.value = params.pointSize;
     stats.dom.hidden = !params.fpsDisplay;
