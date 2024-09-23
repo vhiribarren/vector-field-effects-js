@@ -32,7 +32,7 @@ const FShaderDots = await textFileLoader("./frg_dots.glsl");
 const VShaderDots = await textFileLoader("./vtx_dots.glsl");
 const FShaderInitPos = await textFileLoader("./frg_init_positions.glsl");
 const FShaderUpdatePos = await textFileLoader("./frg_update_positions.glsl");
-
+const FShaderCanvasPreprocess = await textFileLoader("./frg_canvas_preprocessing.glsl");
 
 // Global parameters managed by Tweakpane
 /////////////////////////////////////////
@@ -63,9 +63,10 @@ const renderer = new THREE.WebGLRenderer({});
 document.body.appendChild(renderer.domElement);
 const canvasGeometry = new THREE.PlaneGeometry(1, 1);
 
-let inputRenderTarget = new THREE.WebGLRenderTarget(params.entityCount, 1, {type: THREE.FloatType});
-let outputRenderTarget = new THREE.WebGLRenderTarget(params.entityCount, 1, {type: THREE.FloatType});
-let displayRendererTarget = new THREE.WebGLRenderTarget(null, null);
+let inputPositionsRenderTarget = new THREE.WebGLRenderTarget(params.entityCount, 1, {type: THREE.FloatType});
+let outputPositionsRenderTarget = new THREE.WebGLRenderTarget(params.entityCount, 1, {type: THREE.FloatType});
+let inputDisplayRenderTarget = new THREE.WebGLRenderTarget(null, null);
+let outputDisplayRenderTarget = new THREE.WebGLRenderTarget(null, null);
 
 const initMaterial = new THREE.ShaderMaterial({
     fragmentShader: FShaderInitPos,
@@ -79,7 +80,7 @@ const updateMaterial = new THREE.ShaderMaterial({
     fragmentShader: FShaderUpdatePos,
     glslVersion: THREE.GLSL3,
     uniforms: {
-        uPositions: { value: outputRenderTarget.texture},
+        uPositions: { value: outputPositionsRenderTarget.texture},
         uTimeAccMs: { value: 0},
         uTimeDeltaMs: { value: 0},
         uSpeedStep: { value: 0},
@@ -95,15 +96,26 @@ const drawMaterial = new THREE.RawShaderMaterial({
     fragmentShader: FShaderDots,
     glslVersion: THREE.GLSL3,
     uniforms: {
-        uPositions: { value: outputRenderTarget.texture},
+        uPositions: { value: outputPositionsRenderTarget.texture},
         uPointSize: { value: 0},
     }
 });
 const drawScene = new THREE.Scene();
 drawScene.add(new THREE.Points(drawGeometry, drawMaterial ));
 
+const canvasPreprocessingScene = new THREE.Scene();
+const canvasPreprocessingMaterial = new THREE.ShaderMaterial({
+    depthTest: false,
+    fragmentShader: FShaderCanvasPreprocess,
+    glslVersion: THREE.GLSL3,
+    uniforms: {
+        uCanvas: { value: inputDisplayRenderTarget.texture},
+    }
+});
+canvasPreprocessingScene.add(new THREE.Mesh(canvasGeometry, canvasPreprocessingMaterial));
+
 const finalScene = new THREE.Scene();
-const finalMaterial = new THREE.MeshBasicMaterial({map: displayRendererTarget.texture});
+const finalMaterial = new THREE.MeshBasicMaterial({map: inputDisplayRenderTarget.texture, depthTest: false});
 finalScene.add(new THREE.Mesh(canvasGeometry, finalMaterial));
 
 
@@ -116,8 +128,9 @@ document.body.appendChild(stats.dom);
 const applyDisplayParams = () => {
     const newWidth = window.innerWidth * params.canvasResolution / 100;
     const newHeight = window.innerHeight * params.canvasResolution / 100;
-    displayRendererTarget = new THREE.WebGLRenderTarget(newWidth, newHeight);
-    finalMaterial.map = displayRendererTarget.texture;
+    inputDisplayRenderTarget = new THREE.WebGLRenderTarget(newWidth, newHeight);
+    outputDisplayRenderTarget = new THREE.WebGLRenderTarget(newWidth, newHeight);
+    finalMaterial.map = inputDisplayRenderTarget.texture;
     renderer.setSize(newWidth, newHeight);
     if (params.canvasScale) {
         renderer.domElement.style.cssText = "width: 100%; margin:0; padding: 0;";
@@ -137,8 +150,9 @@ const applyDisplayParams = () => {
 ////////////
 
 applyDisplayParams();
-renderer.setRenderTarget(outputRenderTarget);
+renderer.setRenderTarget(outputPositionsRenderTarget);
 renderer.render(initScene, camera);
+renderer.autoClear = false;
 
 let timeAcc = 0;
 let timeDatePrev =  Date.now();
@@ -148,18 +162,23 @@ renderer.setAnimationLoop(() => {
     timeAcc += timeDelta;
     timeDatePrev = timeDateCurrent;
 
-    [inputRenderTarget, outputRenderTarget] = [outputRenderTarget, inputRenderTarget];
-    updateMaterial.uniforms.uPositions.value = inputRenderTarget.textures[0];
+    [inputPositionsRenderTarget, outputPositionsRenderTarget] = [outputPositionsRenderTarget, inputPositionsRenderTarget];
+    updateMaterial.uniforms.uPositions.value = inputPositionsRenderTarget.textures[0];
     updateMaterial.uniforms.uTimeAccMs.value = timeAcc;
     updateMaterial.uniforms.uTimeDeltaMs.value = timeDelta;
-    renderer.setRenderTarget(outputRenderTarget);
+    renderer.setRenderTarget(outputPositionsRenderTarget);
     renderer.render(updateScene, camera);
     
-    drawMaterial.uniforms.uPositions.value = outputRenderTarget.textures[0];
-    renderer.setRenderTarget(displayRendererTarget);
-    renderer.autoClear = false;
+    [inputDisplayRenderTarget, outputDisplayRenderTarget] = [outputDisplayRenderTarget, inputDisplayRenderTarget];
+    canvasPreprocessingMaterial.uniforms.uCanvas.value = inputDisplayRenderTarget.texture;
+    renderer.setRenderTarget(outputDisplayRenderTarget);
+    renderer.render(canvasPreprocessingScene, camera);
+
+    drawMaterial.uniforms.uPositions.value = outputPositionsRenderTarget.texture;
+    renderer.setRenderTarget(outputDisplayRenderTarget);
     renderer.render(drawScene, camera);
 
+    finalMaterial.map = outputDisplayRenderTarget.texture;
     renderer.setRenderTarget(null);
     renderer.render(finalScene, camera);
 
