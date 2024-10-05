@@ -31,6 +31,6 @@ float random(vec2 uv) {
 
 void main() {
     float x = 2.0*(0.5-random(gl_FragCoord.xy	));
-    float y = 2.0*(0.5-random(gl_FragCoord	.yx));
+    float y = 2.0*(0.5-random(gl_FragCoord.yx));
     outputValue = vec4(x, y, 1.0, 1.0);
 }

@@ -41,8 +41,16 @@ vec3 color_palette(float val) {
     return uPaletteLuminosity + uPaletteContrast*cos(2.0*PI*(val*uPaletteFreq+uPalettePhase));
 }
 
+ivec2 coordsFromIndex() {
+    int index = gl_InstanceID;
+    int width = textureSize(uPositions, 0).x;
+    int x = index % width;
+    int y = index / width;
+    return ivec2(x, y);
+}
+
 void main() {
-    vec3 position = texelFetch(uPositions, ivec2(gl_InstanceID, 0), 0).xyz;
+    vec3 position = texelFetch(uPositions, coordsFromIndex(), 0).xyz;
     gl_Position =  vec4(position, 1.0);
     gl_PointSize = uPointSize;
     color = vec4(color_palette(float(gl_InstanceID) / uTotalPoints ), 1.0);

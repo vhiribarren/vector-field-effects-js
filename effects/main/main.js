@@ -34,11 +34,18 @@ const FShaderInitPos = await textFileLoader("./frg_init_positions.glsl");
 const FShaderUpdatePos = await textFileLoader("./frg_update_positions.glsl");
 const FShaderCanvasPreprocess = await textFileLoader("./frg_canvas_preprocessing.glsl");
 
+
+const MAX_TEXTURE_SIZE = 1024;
+
+function textureDimensionsFromCount(count) {
+    return [MAX_TEXTURE_SIZE, Math.ceil(count / MAX_TEXTURE_SIZE)];
+}
+
 // Global parameters managed by Tweakpane
 /////////////////////////////////////////
 
 const params = {
-    entityCount: 16384,
+    entityCount: 1000000, // Warning, entityCount - 1 is drawn, to check why, probably because gl_InstanceID starts with 1
     canvasResolution: 100, // In percentage
     canvasScale: true,
     canvasSmooth: false,
@@ -49,7 +56,7 @@ const params = {
     palettePhase: { x: 0.5, y: 0.5, z: 0.5 },
     backgroundColor:  {r: 0, g: 0, b: 0, a: 1.0},
     speedStep: 0.0001,
-    pointSize: 2.0,
+    pointSize: 1.0,
     animRun: true,
 };
 
@@ -63,8 +70,9 @@ const renderer = new THREE.WebGLRenderer({});
 document.body.appendChild(renderer.domElement);
 const canvasGeometry = new THREE.PlaneGeometry(1, 1);
 
-let inputPositionsRenderTarget = new THREE.WebGLRenderTarget(params.entityCount, 1, {type: THREE.FloatType});
-let outputPositionsRenderTarget = new THREE.WebGLRenderTarget(params.entityCount, 1, {type: THREE.FloatType});
+let textureDim = textureDimensionsFromCount(params.entityCount);
+let inputPositionsRenderTarget = new THREE.WebGLRenderTarget(...textureDim, {type: THREE.FloatType});
+let outputPositionsRenderTarget = new THREE.WebGLRenderTarget(...textureDim, {type: THREE.FloatType});
 let inputDisplayRenderTarget = new THREE.WebGLRenderTarget(null, null);
 let outputDisplayRenderTarget = new THREE.WebGLRenderTarget(null, null);
 
