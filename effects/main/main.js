@@ -45,7 +45,7 @@ function textureDimensionsFromCount(count) {
 /////////////////////////////////////////
 
 const params = {
-    particleCount: 100000, // TODO Seems particleCount - 1 is drawn, to check why, probably because gl_InstanceID starts with 1?
+    particleCount: 10000, // TODO Seems particleCount - 1 is drawn, to check why, probably because gl_InstanceID starts with 1?
     canvasResolution: 100, // In percentage
     canvasScale: true,
     canvasSmooth: false,
@@ -55,9 +55,15 @@ const params = {
     paletteFreq: { x: 2.0, y: 0.5, z: 0.5 },
     palettePhase: { x: 0.5, y: 0.5, z: 0.5 },
     backgroundColor:  {r: 0, g: 0, b: 0, a: 1.0},
-    speedStep: 0.0001,
+    speedStep: 0.0005,
     pointSize: 1.0,
     animRun: true,
+    fieldFrequence: 1.0,
+    fieldOctaves: 1,
+    fieldGain: 0.5,
+    fieldLacunarity: 2.0,
+    fieldShiftX: 0.0,
+    fieldShiftY: 0.0,
 };
 
 
@@ -94,6 +100,12 @@ const updateStateMaterial = new THREE.ShaderMaterial({
         uTimeAccMs: { value: 0},
         uTimeDeltaMs: { value: 0},
         uSpeedStep: { value: 0},
+        uFieldFrequence: { value: 0},
+        uFieldOctaves: { value: 0},
+        uFieldGain: { value: 0},
+        uFieldLacunarity: { value: 0},
+        uFieldShiftX: { value: 0},
+        uFieldShiftY: { value: 0},
     }
 });
 updateStateScene.add(new THREE.Mesh(canvasGeometry, updateStateMaterial));
@@ -157,12 +169,18 @@ const applyDisplayParams = () => {
             renderer.domElement.style.cssText += "image-rendering: pixelated"
         }
     }
+    updateStateMaterial.uniforms.uSpeedStep.value = params.speedStep;
+    updateStateMaterial.uniforms.uFieldFrequence.value = params.fieldFrequence;
+    updateStateMaterial.uniforms.uFieldOctaves.value = params.fieldOctaves;
+    updateStateMaterial.uniforms.uFieldGain.value = params.fieldGain;
+    updateStateMaterial.uniforms.uFieldLacunarity.value = params.fieldLacunarity;
+    updateStateMaterial.uniforms.uFieldShiftX.value = params.fieldShiftX;
+    updateStateMaterial.uniforms.uFieldShiftY.value = params.fieldShiftY;
     drawParticleMaterial.uniforms.uTotalPoints.value = params.particleCount;
     drawParticleMaterial.uniforms.uPaletteLuminosity.value = paramPoint3ToVector3(params.paletteLuminosity);
     drawParticleMaterial.uniforms.uPaletteContrast.value = paramPoint3ToVector3(params.paletteContrast);
     drawParticleMaterial.uniforms.uPaletteFreq.value = paramPoint3ToVector3(params.paletteFreq);
     drawParticleMaterial.uniforms.uPalettePhase.value = paramPoint3ToVector3(params.palettePhase);
-    updateStateMaterial.uniforms.uSpeedStep.value = params.speedStep;
     drawParticleMaterial.uniforms.uPointSize.value = params.pointSize;
     stats.dom.hidden = !params.fpsDisplay;
     renderer.setClearColor(new THREE.Color(params.backgroundColor.r, params.backgroundColor.g, params.backgroundColor.b), params.backgroundColor.a);

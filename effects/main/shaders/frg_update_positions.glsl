@@ -28,6 +28,13 @@ uniform float uTimeAccMs;
 uniform float uTimeDeltaMs;
 uniform sampler2D uPositions;
 
+uniform float uFieldFrequence;
+uniform uint uFieldOctaves;
+uniform float uFieldGain;
+uniform float uFieldLacunarity;
+uniform float uFieldShiftX;
+uniform float uFieldShiftY;
+
 layout(location = 0) out vec4 outputValue;
 
 float PI = 3.14;
@@ -49,7 +56,23 @@ float average_noise_smoothstep(vec2 scaled_uv) {
 
 
 vec2 vector_field(vec2 uv) {
-    float r = 2.0*PI*average_noise_smoothstep(10.0*uv);
+
+    float scaled_u = uv.x * uFieldFrequence + uFieldShiftX;
+    float scaled_v = uv.y * uFieldFrequence + uFieldShiftY;
+    float noise_val = 0.0;
+    float freq = uFieldFrequence;
+    float amp = 1.0;
+    float total_amplitude = 0.0;
+    for (uint i = 0u; i < uFieldOctaves; i++) {
+        total_amplitude += amp;
+        noise_val += amp * average_noise_smoothstep(vec2(scaled_u, scaled_v));
+        amp *= uFieldGain;
+        scaled_u *= uFieldLacunarity;
+        scaled_v *= uFieldLacunarity;
+    }
+    noise_val /= total_amplitude;
+
+    float r = 2.0*PI*noise_val;
     return vec2(cos(r), sin(r));
     //return normalize(vec2(1.0, cos(PI*uv.y/size.y)));
 }

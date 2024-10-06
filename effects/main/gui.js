@@ -60,6 +60,34 @@ export function setupGUI(params, paramUpdatedCallback) {
     displayFolder.addBinding(params, "canvasSmooth", { label: "Canvas Smooth" });
     displayFolder.addBinding(params, "fpsDisplay", { label: "Display FPS" });
     
+    const fieldFolder = pane.addFolder({
+        title: "Vector field",
+        expanded: true,
+    });
+    fieldFolder.addBinding(params, "fieldFrequence", { 
+        label: "Frequence",
+        min: 0.0
+    });
+    fieldFolder.addBinding(params, "fieldOctaves", { 
+        label: "Octaves",
+        min: 1,
+        step: 1,
+    });
+    fieldFolder.addBinding(params, "fieldGain", { 
+        label: "Gain",
+        min: 0.0
+    });
+    fieldFolder.addBinding(params, "fieldLacunarity", { 
+        label: "Lacunarity",
+        min: 0.0
+    });
+    fieldFolder.addBinding(params, "fieldShiftX", { 
+        label: "Shift X",
+    });
+    fieldFolder.addBinding(params, "fieldShiftY", { 
+        label: "Shift Y",
+    });
+
     const colorPaletteFolder = pane.addFolder({
         title: "Color Palette",
         expanded: true,
