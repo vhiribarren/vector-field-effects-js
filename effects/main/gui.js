@@ -126,6 +126,8 @@ export function setupGUI(params, paramUpdatedCallback) {
         title: "Simulation",
         expanded: true,
     });
+    simulationFolder.addBinding(params, "trailEnabled");
+    simulationFolder.addBinding(params, "trailFadeSpeed");
     simulationFolder.addBinding(params, "speedStep");
     simulationFolder.addBinding(params, "pointSize", {
         min: 0,

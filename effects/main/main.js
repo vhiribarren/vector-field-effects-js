@@ -64,6 +64,8 @@ const params = {
     fieldLacunarity: 2.0,
     fieldShiftX: 0.0,
     fieldShiftY: 0.0,
+    trailEnabled: true,
+    trailFadeSpeed: 0.01,
 };
 
 
@@ -139,6 +141,8 @@ const canvasPreprocessingMaterial = new THREE.ShaderMaterial({
     glslVersion: THREE.GLSL3,
     uniforms: {
         uCanvas: { value: inputDisplayRenderTarget.texture},
+        uTrailEnabled: { value: false},
+        uTrailFadeSpeed: { value: 0},
     }
 });
 canvasPreprocessingScene.add(new THREE.Mesh(canvasGeometry, canvasPreprocessingMaterial));
@@ -176,6 +180,8 @@ const applyDisplayParams = () => {
     updateStateMaterial.uniforms.uFieldLacunarity.value = params.fieldLacunarity;
     updateStateMaterial.uniforms.uFieldShiftX.value = params.fieldShiftX;
     updateStateMaterial.uniforms.uFieldShiftY.value = params.fieldShiftY;
+    canvasPreprocessingMaterial.uniforms.uTrailEnabled.value = params.trailEnabled;
+    canvasPreprocessingMaterial.uniforms.uTrailFadeSpeed.value = params.trailFadeSpeed;
     drawParticleMaterial.uniforms.uTotalPoints.value = params.particleCount;
     drawParticleMaterial.uniforms.uPaletteLuminosity.value = paramPoint3ToVector3(params.paletteLuminosity);
     drawParticleMaterial.uniforms.uPaletteContrast.value = paramPoint3ToVector3(params.paletteContrast);
