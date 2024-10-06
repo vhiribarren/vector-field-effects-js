@@ -28,8 +28,8 @@ import { setupGUI } from "./gui.js";
 import { textFileLoader } from "../../js/utils.js";
 
 
-const FShaderParticles = await textFileLoader("./shaders/frg_particles.glsl");
-const VShaderParticles = await textFileLoader("./shaders/vtx_particles.glsl");
+const FShaderParticles = await textFileLoader("./shaders/frg_draw_particles.glsl");
+const VShaderParticles = await textFileLoader("./shaders/vtx_draw_particles.glsl");
 const FShaderInitPos = await textFileLoader("./shaders/frg_init_positions.glsl");
 const FShaderUpdatePos = await textFileLoader("./shaders/frg_update_positions.glsl");
 const FShaderCanvasPreprocess = await textFileLoader("./shaders/frg_canvas_preprocessing.glsl");
@@ -45,7 +45,7 @@ function textureDimensionsFromCount(count) {
 /////////////////////////////////////////
 
 const params = {
-    particleCount: 10000, // TODO Seems particleCount - 1 is drawn, to check why, probably because gl_InstanceID starts with 1?
+    particleCount: 1000, // TODO Seems particleCount - 1 is drawn, to check why, probably because gl_InstanceID starts with 1?
     canvasResolution: 100, // In percentage
     canvasScale: true,
     canvasSmooth: false,
@@ -55,7 +55,7 @@ const params = {
     paletteFreq: { x: 2.0, y: 0.5, z: 0.5 },
     palettePhase: { x: 0.5, y: 0.5, z: 0.5 },
     backgroundColor:  {r: 0, g: 0, b: 0, a: 1.0},
-    speedStep: 0.0005,
+    speedStep: 0.0001,
     pointSize: 1.0,
     animRun: true,
     fieldFrequence: 1.0,
@@ -145,7 +145,7 @@ canvasPreprocessingScene.add(new THREE.Mesh(canvasGeometry, canvasPreprocessingM
 
 // Display scene, render result on the screen
 const displayScene = new THREE.Scene();
-const displayMaterial = new THREE.MeshBasicMaterial({map: inputDisplayRenderTarget.texture, depthTest: false});
+const displayMaterial = new THREE.MeshBasicMaterial({map: inputDisplayRenderTarget.texture, depthTest: false, transparent: true});
 displayScene.add(new THREE.Mesh(canvasGeometry, displayMaterial));
 
 // To display FPS statistics
@@ -228,6 +228,7 @@ renderer.setAnimationLoop(() => {
 
     displayMaterial.map = outputDisplayRenderTarget.texture;
     renderer.setRenderTarget(null);
+    renderer.clearColor();
     renderer.render(displayScene, camera);
 
     if (params.fpsDisplay) {
