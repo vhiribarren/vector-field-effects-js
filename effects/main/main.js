@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import * as THREE from "three";
-import Stats from "three/addons/libs/stats.module.js";
+import Stats from "three/addons/stats";
 import { setupGUI } from "./gui.js";
 import { textFileLoader } from "../../js/utils.js";
 
