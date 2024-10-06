@@ -45,7 +45,7 @@ function textureDimensionsFromCount(count) {
 /////////////////////////////////////////
 
 const params = {
-    entityCount: 1000000, // Warning, entityCount - 1 is drawn, to check why, probably because gl_InstanceID starts with 1
+    entityCount: 100000, // Warning, entityCount - 1 is drawn, to check why, probably because gl_InstanceID starts with 1
     canvasResolution: 100, // In percentage
     canvasScale: true,
     canvasSmooth: false,

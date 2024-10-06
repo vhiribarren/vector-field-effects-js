@@ -56,6 +56,11 @@ vec2 vector_field(vec2 uv) {
 
 
 void main() {
-  vec4 particlePos = texelFetch(uPositions, ivec2(gl_FragCoord.x, gl_FragCoord.y), 0);
+  vec4 currentPosition = texelFetch(uPositions, ivec2(gl_FragCoord.x, gl_FragCoord.y), 0);
+  float randomValue = random(uTimeDeltaMs * currentPosition.xy);
+  bool shouldRandomize = randomValue < 0.3;
+  vec4 particlePos = shouldRandomize
+    ? vec4(1.0 - 2.0*random(vec2(currentPosition.x, randomValue)), 1.0- 2.0*random(vec2(randomValue, currentPosition.y)), 0.0, 0.0)
+    : currentPosition;
   outputValue = particlePos + vec4(vector_field(particlePos.xy), 0.0, 0.0)*uSpeedStep*uTimeDeltaMs;
 }

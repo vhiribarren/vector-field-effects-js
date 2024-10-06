@@ -33,5 +33,5 @@ void main() {
         outputColor = vec4(0.0, 0.0, 0.0, 0.0);
         return;
     }
-    outputColor = vec4(canvasValue.rgb, canvasValue.a - 0.002);
+    outputColor = vec4(canvasValue.rgb, canvasValue.a - 0.1);
 }
