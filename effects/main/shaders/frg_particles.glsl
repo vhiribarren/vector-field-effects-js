@@ -23,14 +23,18 @@ SOFTWARE.
 */
 precision highp float;
 
-layout(location = 0) out vec4 outputValue;
+layout(location = 0) out vec4 outputColor;
+in vec4 color;
 
-float random(vec2 uv) {
-  return fract(sin(dot(uv.xy, vec2(12.9898, 78.233))) * 43758.5453123);
-}
-
+// Given a particle created by a vertex shader
+// When the particle is drawn
+// Then we color the particle
+//
+// Input:
+//     color: vec4, color of the particle
+// 
+// Output:
+//     outputColor: vec4, color of the particle
 void main() {
-    float x = 2.0*(0.5-random(gl_FragCoord.xy	));
-    float y = 2.0*(0.5-random(gl_FragCoord.yx));
-    outputValue = vec4(x, y, 1.0, 1.0);
+    outputColor = color;
 }

@@ -54,7 +54,9 @@ vec2 vector_field(vec2 uv) {
     //return normalize(vec2(1.0, cos(PI*uv.y/size.y)));
 }
 
-
+// Given a texture containing information on particle state
+// When we need to update this information before next drawing,
+// Then the texture is updated with new information 
 void main() {
   vec4 currentPosition = texelFetch(uPositions, ivec2(gl_FragCoord.x, gl_FragCoord.y), 0);
   float randomValue = random(uTimeDeltaMs * currentPosition.xy);

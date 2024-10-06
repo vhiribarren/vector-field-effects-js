@@ -21,37 +21,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+precision highp float;
 
-uniform vec3 uPaletteLuminosity;
-uniform vec3 uPaletteContrast;
-uniform vec3 uPaletteFreq;
-uniform vec3 uPalettePhase;
-uniform float uPointSize;
-uniform float uTotalPoints;
-uniform sampler2D uPositions;
-out vec4 color;
+layout(location = 0) out vec4 outputValue;
 
-float PI = 3.141;
-
-
-vec3 color_palette(float val) {
-    // From Inigo Quilez
-    // https://www.youtube.com/shorts/TH3OTy5fTog
-    // https://iquilezles.org/articles/palettes/
-    return uPaletteLuminosity + uPaletteContrast*cos(2.0*PI*(val*uPaletteFreq+uPalettePhase));
+float random(vec2 uv) {
+  return fract(sin(dot(uv.xy, vec2(12.9898, 78.233))) * 43758.5453123);
 }
 
-ivec2 coordsFromIndex() {
-    int index = gl_InstanceID;
-    int width = textureSize(uPositions, 0).x;
-    int x = index % width;
-    int y = index / width;
-    return ivec2(x, y);
-}
-
+// Given particles do not exist 
+// When the simulation start
+// Then particles have their initial position randomized
+//
+// Vtx shader input:
+//     a shape (canvas) covering the output texture
+//
+// Output:
+//     outputValue: vec4
+//         x, y contains the position between [-1, 1]
+//         output is supposed to be done on a texture where each element will
+//         contain information on a particle
 void main() {
-    vec3 position = texelFetch(uPositions, coordsFromIndex(), 0).xyz;
-    gl_Position =  vec4(position, 1.0);
-    gl_PointSize = uPointSize;
-    color = vec4(color_palette(float(gl_InstanceID) / uTotalPoints ), 1.0);
+    float x = 2.0*(0.5-random(gl_FragCoord.xy	));
+    float y = 2.0*(0.5-random(gl_FragCoord.yx));
+    outputValue = vec4(x, y, 1.0, 1.0);
 }

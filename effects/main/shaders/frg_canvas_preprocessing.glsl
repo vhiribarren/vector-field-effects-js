@@ -26,7 +26,9 @@ precision highp float;
 layout(location = 0) out vec4 outputColor;
 uniform sampler2D uCanvas;
 
-
+// Given a texture with the previous drawn state
+// Before we draw new particles
+// Then the texture is dimmed to progressively erase the particles
 void main() {
     vec4 canvasValue = texelFetch(uCanvas, ivec2(gl_FragCoord), 0);
     if (canvasValue.a < 0.00001) {
