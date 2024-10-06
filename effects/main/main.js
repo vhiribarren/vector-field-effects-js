@@ -24,16 +24,15 @@ SOFTWARE.
 
 import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
-import { Pane } from "tweakpane";
-import * as TweakpaneEssentialsPlugin from "tweakpane/plugin-essentials";
+import { setupGUI } from "./gui.js";
 import { textFileLoader } from "../../js/utils.js";
+
 
 const FShaderDots = await textFileLoader("./frg_dots.glsl");
 const VShaderDots = await textFileLoader("./vtx_dots.glsl");
 const FShaderInitPos = await textFileLoader("./frg_init_positions.glsl");
 const FShaderUpdatePos = await textFileLoader("./frg_update_positions.glsl");
 const FShaderCanvasPreprocess = await textFileLoader("./frg_canvas_preprocessing.glsl");
-
 
 const MAX_TEXTURE_SIZE = 1024;
 
@@ -166,11 +165,12 @@ const applyDisplayParams = () => {
 }
 
 
-
 // Rendering
 ////////////
 
+setupGUI(params, applyDisplayParams);
 applyDisplayParams();
+
 renderer.setRenderTarget(outputPositionsRenderTarget);
 renderer.render(initScene, camera);
 renderer.autoClear = false;
@@ -213,81 +213,3 @@ window.addEventListener("resize", (_event) => {
     //Disabled for now
     //applyDisplayParams();
 });
-
-
-// Configure Tweakpane
-//////////////////////
-
-const pane = new Pane({
-    title: "Parameters",
-    expanded: true,
-});
-pane.registerPlugin(TweakpaneEssentialsPlugin);
-pane.on("change", (_ev) => {
-    applyDisplayParams();
-});
-
-const displayFolder = pane.addFolder({
-    title: "Display",
-    expanded: true,
-});
-displayFolder.addBinding(params, "canvasResolution", {
-    label: "Resolution",
-    step: 1,
-    min: 1,
-    max: 100,
-    format: (v) => v + " %",
-});
-displayFolder.addBinding(params, "canvasScale", { label: "Full screen" });
-displayFolder.addBinding(params, "canvasSmooth", { label: "Canvas Smooth" });
-displayFolder.addBinding(params, "fpsDisplay", { label: "Display FPS" });
-
-const colorPaletteFolder = pane.addFolder({
-    title: "Color Palette",
-    expanded: true,
-})
-colorPaletteFolder.addBinding(params, "paletteLuminosity", {
-    label: "Luminosity",
-    x: { min: 0, max: 1 },
-    y: { min: 0, max: 1 },
-    z: { min: 0, max: 1 },
-});
-colorPaletteFolder.addBinding(params, "paletteContrast", {
-    label: "Contrast",
-    x: { min: 0, max: 1 },
-    y: { min: 0, max: 1 },
-    z: { min: 0, max: 1 },
-});
-colorPaletteFolder.addBinding(params, "paletteFreq", {
-    label: "Frequence",
-    x: { min: 0, max: 100 },
-    y: { min: 0, max: 100 },
-    z: { min: 0, max: 100 },
-});
-colorPaletteFolder.addBinding(params, "palettePhase", {
-    label: "Phase",
-    x: { min: 0, max: 1 },
-    y: { min: 0, max: 1 },
-    z: { min: 0, max: 1 },
-});
-colorPaletteFolder.addBinding(params, "backgroundColor", {
-    label: "Background Color",
-    picker: 'inline',
-    color: {type: "float", alpha: true},
-});
-
-const simulationFolder = pane.addFolder({
-    title: "Simulation",
-    expanded: true,
-});
-simulationFolder.addBinding(params, "speedStep");
-simulationFolder.addBinding(params, "pointSize", {
-    min: 0,
-    label: "Point Size",
-});
-
-const animationFolder = pane.addFolder({
-    title: "Animation",
-    expanded: true,
-});
-animationFolder.addBinding(params, "animRun", { label: "Run Animation" });
