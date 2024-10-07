@@ -157,16 +157,18 @@ const stats = new Stats()
 document.body.appendChild(stats.dom);
 
 // Configure elements depending on window and Tweakpane
-const applyDisplayParams = () => {
-    const paramPoint3ToVector3 = (paramPoint3Val) => new THREE.Vector3(
-        paramPoint3Val.x, paramPoint3Val.y, paramPoint3Val.z
-    );
+const applyDisplayResolution = () => {
     const newWidth = window.innerWidth * params.canvasResolution / 100;
     const newHeight = window.innerHeight * params.canvasResolution / 100;
     inputDisplayRenderTarget = new THREE.WebGLRenderTarget(newWidth, newHeight);
     outputDisplayRenderTarget = new THREE.WebGLRenderTarget(newWidth, newHeight);
     displayMaterial.map = inputDisplayRenderTarget.texture;
     renderer.setSize(newWidth, newHeight);
+}
+const applyDisplayParams = () => {
+    const paramPoint3ToVector3 = (paramPoint3Val) => new THREE.Vector3(
+        paramPoint3Val.x, paramPoint3Val.y, paramPoint3Val.z
+    );
     if (params.canvasScale) {
         renderer.domElement.style.cssText = "width: 100%; margin:0; padding: 0;";
         if (!params.canvasSmooth) {
@@ -196,7 +198,8 @@ const applyDisplayParams = () => {
 // Rendering
 ////////////
 
-setupGUI(params, applyDisplayParams);
+setupGUI(params, applyDisplayParams, applyDisplayResolution);
+applyDisplayResolution();
 applyDisplayParams();
 
 // Init --> Update --> Preprocess --> Draw --> Display --+
@@ -211,10 +214,14 @@ renderer.autoClear = false;
 let timeAcc = 0;
 let timeDatePrev =  Date.now();
 renderer.setAnimationLoop(() => {
+
     const timeDateCurrent = Date.now();
     const timeDelta =  params.animRun ? timeDateCurrent - timeDatePrev : 0.0;
     timeAcc += timeDelta;
     timeDatePrev = timeDateCurrent;
+    if (!params.animRun) {
+        return;
+    }
 
     [inputPositionsRenderTarget, outputPositionsRenderTarget] = [outputPositionsRenderTarget, inputPositionsRenderTarget];
     updateStateMaterial.uniforms.uPositions.value = inputPositionsRenderTarget.textures[0];

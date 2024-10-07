@@ -28,7 +28,7 @@ import * as TweakpaneEssentialsPlugin from "tweakpane/plugin-essentials";
 
 let isGuiSetup = false;
 
-export function setupGUI(params, paramUpdatedCallback) {
+export function setupGUI(params, paramUpdatedCallback, resolutionUpdatedCallback) {
 
     if (isGuiSetup) {
         console.warn("GUI is arealdy setup, skipping");
@@ -41,24 +41,25 @@ export function setupGUI(params, paramUpdatedCallback) {
         expanded: true,
     });
     pane.registerPlugin(TweakpaneEssentialsPlugin);
-    pane.on("change", (_ev) => {
-        paramUpdatedCallback();
-    });
+    pane.on("change", (_ev) =>  paramUpdatedCallback());
     
-    const displayFolder = pane.addFolder({
+    pane.addBinding(params, "fpsDisplay", { label: "Display FPS" });
+
+    const screenResolutionFolder = pane.addFolder({
         title: "Display",
-        expanded: true,
+        expanded: false,
     });
-    displayFolder.addBinding(params, "canvasResolution", {
-        label: "Resolution",
-        step: 1,
-        min: 1,
-        max: 100,
-        format: (v) => v + " %",
-    });
-    displayFolder.addBinding(params, "canvasScale", { label: "Full screen" });
-    displayFolder.addBinding(params, "canvasSmooth", { label: "Canvas Smooth" });
-    displayFolder.addBinding(params, "fpsDisplay", { label: "Display FPS" });
+    screenResolutionFolder.on("change", (_ev) => resolutionUpdatedCallback());
+    screenResolutionFolder
+        .addBinding(params, "canvasResolution", {
+            label: "Resolution",
+            step: 1,
+            min: 1,
+            max: 100,
+            format: (v) => v + " %",
+        })
+    screenResolutionFolder.addBinding(params, "canvasScale", { label: "Full screen" });
+    screenResolutionFolder.addBinding(params, "canvasSmooth", { label: "Canvas Smooth" });
     
     const fieldFolder = pane.addFolder({
         title: "Vector field",
@@ -126,8 +127,11 @@ export function setupGUI(params, paramUpdatedCallback) {
         title: "Simulation",
         expanded: true,
     });
-    simulationFolder.addBinding(params, "trailEnabled");
-    simulationFolder.addBinding(params, "trailFadeSpeed");
+    simulationFolder.addBinding(params, "trailEnabled", { label: "With trail" });
+    simulationFolder.addBinding(params, "trailFadeSpeed", {
+        min: 0,
+        label: "Fade speed",
+    });
     simulationFolder.addBinding(params, "speedStep");
     simulationFolder.addBinding(params, "pointSize", {
         min: 0,
