@@ -54,7 +54,7 @@ const params = {
     paletteContrast: { x: 1.0, y: 1.0, z: 1.0 },
     paletteFreq: { x: 2.0, y: 0.5, z: 0.5 },
     palettePhase: { x: 0.5, y: 0.5, z: 0.5 },
-    backgroundColor:  {r: 0, g: 0, b: 0, a: 1.0},
+    backgroundColor: { r: 0, g: 0, b: 0, a: 1.0 },
     speedStep: 0.0001,
     pointSize: 1.0,
     animRun: true,
@@ -79,8 +79,8 @@ document.body.appendChild(renderer.domElement);
 const canvasGeometry = new THREE.PlaneGeometry(1, 1);
 
 const textureDim = textureDimensionsFromCount(params.particleCount);
-let inputPositionsRenderTarget = new THREE.WebGLRenderTarget(...textureDim, {type: THREE.FloatType});
-let outputPositionsRenderTarget = new THREE.WebGLRenderTarget(...textureDim, {type: THREE.FloatType});
+let inputPositionsRenderTarget = new THREE.WebGLRenderTarget(...textureDim, { type: THREE.FloatType });
+let outputPositionsRenderTarget = new THREE.WebGLRenderTarget(...textureDim, { type: THREE.FloatType });
 let inputDisplayRenderTarget = new THREE.WebGLRenderTarget(null, null);
 let outputDisplayRenderTarget = new THREE.WebGLRenderTarget(null, null);
 
@@ -98,32 +98,31 @@ const updateStateMaterial = new THREE.ShaderMaterial({
     fragmentShader: FShaderUpdatePos,
     glslVersion: THREE.GLSL3,
     uniforms: {
-        uPositions: { value: outputPositionsRenderTarget.texture},
-        uTimeAccMs: { value: 0},
-        uTimeDeltaMs: { value: 0},
-        uSpeedStep: { value: 0},
-        uFieldFrequence: { value: 0},
-        uFieldOctaves: { value: 0},
-        uFieldGain: { value: 0},
-        uFieldLacunarity: { value: 0},
-        uFieldShiftX: { value: 0},
-        uFieldShiftY: { value: 0},
+        uPositions: { value: outputPositionsRenderTarget.texture },
+        uTimeAccMs: { value: 0 },
+        uTimeDeltaMs: { value: 0 },
+        uSpeedStep: { value: 0 },
+        uFieldFrequence: { value: 0 },
+        uFieldOctaves: { value: 0 },
+        uFieldGain: { value: 0 },
+        uFieldLacunarity: { value: 0 },
+        uFieldShiftX: { value: 0 },
+        uFieldShiftY: { value: 0 },
     }
 });
 updateStateScene.add(new THREE.Mesh(canvasGeometry, updateStateMaterial));
 
 // Draw scene, actually draw the particles using their state
 const drawParticleGeometry = new THREE.InstancedBufferGeometry();
-drawParticleGeometry.instanceCount = params.particleCount;
-drawParticleGeometry.setAttribute( 'position',  new THREE.Float32BufferAttribute([0.0, 0.0, 0.0], 3 ));
+drawParticleGeometry.setAttribute('position', new THREE.Float32BufferAttribute([0.0, 0.0, 0.0], 3));
 const drawParticleMaterial = new THREE.RawShaderMaterial({
     vertexShader: VShaderParticles,
     fragmentShader: FShaderParticles,
     glslVersion: THREE.GLSL3,
     uniforms: {
-        uPositions: { value: outputPositionsRenderTarget.texture},
-        uPointSize: { value: 0},
-        uTotalPoints: { value: 0},
+        uPositions: { value: outputPositionsRenderTarget.texture },
+        uPointSize: { value: 0 },
+        uTotalPoints: { value: 0 },
         uPaletteLuminosity: { value: new THREE.Vector3(0.0, 0.0, 0.0) },
         uPaletteContrast: { value: new THREE.Vector3(0.0, 0.0, 0.0) },
         uPaletteFreq: { value: new THREE.Vector3(0.0, 0.0, 0.0) },
@@ -131,7 +130,7 @@ const drawParticleMaterial = new THREE.RawShaderMaterial({
     }
 });
 const drawParticleScene = new THREE.Scene();
-drawParticleScene.add(new THREE.Points(drawParticleGeometry, drawParticleMaterial ));
+drawParticleScene.add(new THREE.Points(drawParticleGeometry, drawParticleMaterial));
 
 // Preprocessing scene, before particles are drawn
 const canvasPreprocessingScene = new THREE.Scene();
@@ -140,16 +139,16 @@ const canvasPreprocessingMaterial = new THREE.ShaderMaterial({
     fragmentShader: FShaderCanvasPreprocess,
     glslVersion: THREE.GLSL3,
     uniforms: {
-        uCanvas: { value: inputDisplayRenderTarget.texture},
-        uTrailEnabled: { value: false},
-        uTrailFadeSpeed: { value: 0},
+        uCanvas: { value: inputDisplayRenderTarget.texture },
+        uTrailEnabled: { value: false },
+        uTrailFadeSpeed: { value: 0 },
     }
 });
 canvasPreprocessingScene.add(new THREE.Mesh(canvasGeometry, canvasPreprocessingMaterial));
 
 // Display scene, render result on the screen
 const displayScene = new THREE.Scene();
-const displayMaterial = new THREE.MeshBasicMaterial({map: inputDisplayRenderTarget.texture, depthTest: false, transparent: true});
+const displayMaterial = new THREE.MeshBasicMaterial({ map: inputDisplayRenderTarget.texture, depthTest: false, transparent: true });
 displayScene.add(new THREE.Mesh(canvasGeometry, displayMaterial));
 
 // To display FPS statistics
@@ -164,6 +163,15 @@ const applyDisplayResolution = () => {
     outputDisplayRenderTarget = new THREE.WebGLRenderTarget(newWidth, newHeight);
     displayMaterial.map = inputDisplayRenderTarget.texture;
     renderer.setSize(newWidth, newHeight);
+}
+const applyParticleCount = () => {
+    const textureDim = textureDimensionsFromCount(params.particleCount);
+    inputPositionsRenderTarget = new THREE.WebGLRenderTarget(...textureDim, { type: THREE.FloatType });
+    outputPositionsRenderTarget = new THREE.WebGLRenderTarget(...textureDim, { type: THREE.FloatType });
+    drawParticleGeometry.instanceCount = params.particleCount;
+    drawParticleMaterial.uniforms.uTotalPoints.value = params.particleCount;
+    renderer.setRenderTarget(outputPositionsRenderTarget);
+    renderer.render(initScene, camera);
 }
 const applyDisplayParams = () => {
     const paramPoint3ToVector3 = (paramPoint3Val) => new THREE.Vector3(
@@ -184,7 +192,6 @@ const applyDisplayParams = () => {
     updateStateMaterial.uniforms.uFieldShiftY.value = params.fieldShiftY;
     canvasPreprocessingMaterial.uniforms.uTrailEnabled.value = params.trailEnabled;
     canvasPreprocessingMaterial.uniforms.uTrailFadeSpeed.value = params.trailFadeSpeed;
-    drawParticleMaterial.uniforms.uTotalPoints.value = params.particleCount;
     drawParticleMaterial.uniforms.uPaletteLuminosity.value = paramPoint3ToVector3(params.paletteLuminosity);
     drawParticleMaterial.uniforms.uPaletteContrast.value = paramPoint3ToVector3(params.paletteContrast);
     drawParticleMaterial.uniforms.uPaletteFreq.value = paramPoint3ToVector3(params.paletteFreq);
@@ -198,25 +205,24 @@ const applyDisplayParams = () => {
 // Rendering
 ////////////
 
-setupGUI(params, applyDisplayParams, applyDisplayResolution);
-applyDisplayResolution();
-applyDisplayParams();
-
 // Init --> Update --> Preprocess --> Draw --> Display --+
 //            ^                                          |
 //            |                                          |
 //            +------------------------------------------+
 
-renderer.setRenderTarget(outputPositionsRenderTarget);
-renderer.render(initScene, camera);
+setupGUI(params, applyDisplayParams, applyDisplayResolution, applyParticleCount);
+applyDisplayResolution();
+applyDisplayParams();
+applyParticleCount();
+
 renderer.autoClear = false;
 
 let timeAcc = 0;
-let timeDatePrev =  Date.now();
+let timeDatePrev = Date.now();
 renderer.setAnimationLoop(() => {
 
     const timeDateCurrent = Date.now();
-    const timeDelta =  params.animRun ? timeDateCurrent - timeDatePrev : 0.0;
+    const timeDelta = params.animRun ? timeDateCurrent - timeDatePrev : 0.0;
     timeAcc += timeDelta;
     timeDatePrev = timeDateCurrent;
     if (!params.animRun) {
@@ -229,7 +235,7 @@ renderer.setAnimationLoop(() => {
     updateStateMaterial.uniforms.uTimeDeltaMs.value = timeDelta;
     renderer.setRenderTarget(outputPositionsRenderTarget);
     renderer.render(updateStateScene, camera);
-    
+
     [inputDisplayRenderTarget, outputDisplayRenderTarget] = [outputDisplayRenderTarget, inputDisplayRenderTarget];
     canvasPreprocessingMaterial.uniforms.uCanvas.value = inputDisplayRenderTarget.texture;
     renderer.setRenderTarget(outputDisplayRenderTarget);

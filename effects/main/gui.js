@@ -28,7 +28,7 @@ import * as TweakpaneEssentialsPlugin from "tweakpane/plugin-essentials";
 
 let isGuiSetup = false;
 
-export function setupGUI(params, paramUpdatedCallback, resolutionUpdatedCallback) {
+export function setupGUI(params, paramUpdatedCallback, resolutionUpdatedCallback, particleCountUpdatedCallback) {
 
     if (isGuiSetup) {
         console.warn("GUI is arealdy setup, skipping");
@@ -127,6 +127,13 @@ export function setupGUI(params, paramUpdatedCallback, resolutionUpdatedCallback
         title: "Simulation",
         expanded: true,
     });
+    simulationFolder
+        .addBinding(params, "particleCount", {
+            label: "Particle count",
+            min: 0,
+            step: 1,
+        })
+        .on("change", _ev => particleCountUpdatedCallback());
     simulationFolder.addBinding(params, "trailEnabled", { label: "With trail" });
     simulationFolder.addBinding(params, "trailFadeSpeed", {
         min: 0,
