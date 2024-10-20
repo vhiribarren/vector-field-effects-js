@@ -25,7 +25,8 @@ SOFTWARE.
 import * as THREE from "three";
 import Stats from "three/addons/stats";
 import { setupGUI } from "./gui.js";
-import { isHDPI, textFileLoader } from "../../js/utils.js";
+import { textFileLoader } from "../../js/utils.js";
+import { PARAMS_DEFAULT } from "./params.js";
 
 
 const FShaderParticles = await textFileLoader("./shaders/frg_draw_particles.glsl");
@@ -41,34 +42,8 @@ function textureDimensionsFromCount(count) {
     return [MAX_TEXTURE_SIZE, Math.ceil(count / MAX_TEXTURE_SIZE)];
 }
 
-
-// Global parameters managed by Tweakpane
-/////////////////////////////////////////
-
-const params = {
-    particleCount: 1000, // TODO Seems particleCount - 1 is drawn, to check why, probably because gl_InstanceID starts with 1?
-    withHDPI: true,
-    canvasResolution: 100, // In percentage
-    canvasScale: true,
-    canvasSmooth: false,
-    fpsDisplay: false,
-    paletteLuminosity: { x: 1.0, y: 1.0, z: 0.1 },
-    paletteContrast: { x: 1.0, y: 1.0, z: 1.0 },
-    paletteFreq: { x: 2.0, y: 0.5, z: 0.5 },
-    palettePhase: { x: 0.5, y: 0.5, z: 0.5 },
-    backgroundColor: { r: 0, g: 0, b: 0, a: 1.0 },
-    speedStep: 0.0001,
-    pointSize: isHDPI()? 2.0 : 1.0,
-    animRun: true,
-    fieldFrequence: 1.0,
-    fieldOctaves: 1,
-    fieldGain: 0.5,
-    fieldLacunarity: 2.0,
-    fieldShiftX: 0.0,
-    fieldShiftY: 0.0,
-    trailEnabled: true,
-    trailFadeSpeed: 0.01,
-};
+// Params 
+const params = structuredClone(PARAMS_DEFAULT);
 
 
 // Prepre ThreeJS objects

@@ -25,6 +25,7 @@ SOFTWARE.
 import { Pane } from "tweakpane";
 import * as TweakpaneEssentialsPlugin from "tweakpane/plugin-essentials";
 import { isHDPI } from "../../js/utils.js";
+import { PARAMS_DEFAULT } from "./params.js";
 
 
 let isGuiSetup = false;
@@ -155,5 +156,12 @@ export function setupGUI(params, paramUpdatedCallback, resolutionUpdatedCallback
         expanded: false,
     });
     animationFolder.addBinding(params, "animRun", { label: "Run Animation" });
+
+    pane
+        .addButton({title: 'Reset Parameters'})
+        .on('click', () => {
+            Object.assign(params, structuredClone(PARAMS_DEFAULT));
+            pane.refresh();
+        });
 
 }
