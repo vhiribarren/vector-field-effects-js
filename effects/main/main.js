@@ -25,7 +25,7 @@ SOFTWARE.
 import * as THREE from "three";
 import Stats from "three/addons/stats";
 import { setupGUI } from "./gui.js";
-import { textFileLoader } from "../../js/utils.js";
+import { isHDPI, textFileLoader } from "../../js/utils.js";
 
 
 const FShaderParticles = await textFileLoader("./shaders/frg_draw_particles.glsl");
@@ -58,7 +58,7 @@ const params = {
     palettePhase: { x: 0.5, y: 0.5, z: 0.5 },
     backgroundColor: { r: 0, g: 0, b: 0, a: 1.0 },
     speedStep: 0.0001,
-    pointSize: 1.0,
+    pointSize: isHDPI()? 2.0 : 1.0,
     animRun: true,
     fieldFrequence: 1.0,
     fieldOctaves: 1,

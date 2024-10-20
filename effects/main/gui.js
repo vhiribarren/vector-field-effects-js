@@ -39,12 +39,34 @@ export function setupGUI(params, paramUpdatedCallback, resolutionUpdatedCallback
 
     const pane = new Pane({
         title: "Parameters",
-        expanded: true,
+        expanded: false,
     });
     pane.registerPlugin(TweakpaneEssentialsPlugin);
     pane.on("change", (_ev) =>  paramUpdatedCallback());
     
     pane.addBinding(params, "fpsDisplay", { label: "Display FPS" });
+
+    const particleFolder = pane.addFolder({
+        title: "Particles",
+        expanded: true,
+    });
+    particleFolder
+        .addBinding(params, "particleCount", {
+            label: "Particle count",
+            min: 0,
+            step: 1,
+        })
+        .on("change", _ev => particleCountUpdatedCallback());
+    particleFolder.addBinding(params, "trailEnabled", { label: "With trail" });
+    particleFolder.addBinding(params, "trailFadeSpeed", {
+        min: 0,
+        label: "Fade speed",
+    });
+    particleFolder.addBinding(params, "speedStep");
+    particleFolder.addBinding(params, "pointSize", {
+        min: 0,
+        label: "Point Size",
+    });
 
     const screenResolutionFolder = pane.addFolder({
         title: "Display",
@@ -68,7 +90,7 @@ export function setupGUI(params, paramUpdatedCallback, resolutionUpdatedCallback
     
     const fieldFolder = pane.addFolder({
         title: "Vector field",
-        expanded: true,
+        expanded: false,
     });
     fieldFolder.addBinding(params, "fieldFrequence", { 
         label: "Frequence",
@@ -96,7 +118,7 @@ export function setupGUI(params, paramUpdatedCallback, resolutionUpdatedCallback
 
     const colorPaletteFolder = pane.addFolder({
         title: "Color Palette",
-        expanded: true,
+        expanded: false,
     })
     colorPaletteFolder.addBinding(params, "paletteLuminosity", {
         label: "Luminosity",
@@ -128,31 +150,9 @@ export function setupGUI(params, paramUpdatedCallback, resolutionUpdatedCallback
         color: {type: "float", alpha: true},
     });
     
-    const simulationFolder = pane.addFolder({
-        title: "Simulation",
-        expanded: true,
-    });
-    simulationFolder
-        .addBinding(params, "particleCount", {
-            label: "Particle count",
-            min: 0,
-            step: 1,
-        })
-        .on("change", _ev => particleCountUpdatedCallback());
-    simulationFolder.addBinding(params, "trailEnabled", { label: "With trail" });
-    simulationFolder.addBinding(params, "trailFadeSpeed", {
-        min: 0,
-        label: "Fade speed",
-    });
-    simulationFolder.addBinding(params, "speedStep");
-    simulationFolder.addBinding(params, "pointSize", {
-        min: 0,
-        label: "Point Size",
-    });
-    
     const animationFolder = pane.addFolder({
         title: "Animation",
-        expanded: true,
+        expanded: false,
     });
     animationFolder.addBinding(params, "animRun", { label: "Run Animation" });
 
