@@ -25,3 +25,7 @@ SOFTWARE.
 export async function textFileLoader(url) {
     return await fetch(url).then(r => r.text());
 }
+
+export function isHDPI() {
+    return (window.devicePixelRatio ?? 1) > 1;
+}

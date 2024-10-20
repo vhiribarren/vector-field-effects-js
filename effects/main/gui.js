@@ -24,6 +24,7 @@ SOFTWARE.
 
 import { Pane } from "tweakpane";
 import * as TweakpaneEssentialsPlugin from "tweakpane/plugin-essentials";
+import { isHDPI } from "../../js/utils.js";
 
 
 let isGuiSetup = false;
@@ -60,6 +61,10 @@ export function setupGUI(params, paramUpdatedCallback, resolutionUpdatedCallback
         })
     screenResolutionFolder.addBinding(params, "canvasScale", { label: "Full screen" });
     screenResolutionFolder.addBinding(params, "canvasSmooth", { label: "Canvas Smooth" });
+    screenResolutionFolder.addBinding(params, "withHDPI", {
+        label: "Enable HDPI",
+        disabled: !isHDPI(),
+    });
     
     const fieldFolder = pane.addFolder({
         title: "Vector field",

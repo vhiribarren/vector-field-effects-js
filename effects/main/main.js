@@ -35,6 +35,7 @@ const FShaderUpdatePos = await textFileLoader("./shaders/frg_update_positions.gl
 const FShaderCanvasPreprocess = await textFileLoader("./shaders/frg_canvas_preprocessing.glsl");
 
 const MAX_TEXTURE_SIZE = 1024;
+const PIXEL_RATIO = Math.max(1, Math.floor(window.devicePixelRatio ?? 1));
 
 function textureDimensionsFromCount(count) {
     return [MAX_TEXTURE_SIZE, Math.ceil(count / MAX_TEXTURE_SIZE)];
@@ -46,6 +47,7 @@ function textureDimensionsFromCount(count) {
 
 const params = {
     particleCount: 1000, // TODO Seems particleCount - 1 is drawn, to check why, probably because gl_InstanceID starts with 1?
+    withHDPI: true,
     canvasResolution: 100, // In percentage
     canvasScale: true,
     canvasSmooth: false,
@@ -157,11 +159,14 @@ document.body.appendChild(stats.dom);
 
 // Configure elements depending on window and Tweakpane
 const applyDisplayResolution = () => {
-    const newWidth = window.innerWidth * params.canvasResolution / 100;
-    const newHeight = window.innerHeight * params.canvasResolution / 100;
+    const pixelRatio = params.withHDPI ? PIXEL_RATIO : 1;
+    const newWidth = pixelRatio * window.innerWidth * params.canvasResolution / 100;
+    const newHeight = pixelRatio * window.innerHeight * params.canvasResolution / 100;
     inputDisplayRenderTarget = new THREE.WebGLRenderTarget(newWidth, newHeight);
     outputDisplayRenderTarget = new THREE.WebGLRenderTarget(newWidth, newHeight);
     displayMaterial.map = inputDisplayRenderTarget.texture;
+    renderer.domElement.width = newWidth; // canvas.width, higher resolution for high pixel density
+    renderer.domElement.height = newHeight; // canvas.height, higher resolution for high pixel density
     renderer.setSize(newWidth, newHeight);
 }
 const applyParticleCount = () => {
