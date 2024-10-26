@@ -29,6 +29,7 @@ in vec4 color;
 // Given a particle created by a vertex shader
 // When the particle is drawn
 // Then we color the particle
+// And give it a circle shape
 //
 // Input:
 //     color: vec4, color of the particle
@@ -36,5 +37,10 @@ in vec4 color;
 // Output:
 //     outputColor: vec4, color of the particle
 void main() {
-    outputColor = color;
+    if (distance(gl_PointCoord, vec2(0.5)) > 0.5) {
+        discard;
+    }
+    else {
+        outputColor = color;
+    }
 }
