@@ -26,21 +26,20 @@ precision highp float;
 layout(location = 0) out vec4 outputColor;
 uniform sampler2D uCanvas;
 
-uniform bool uTrailEnabled;
-uniform float uTrailFadeSpeed;
+uniform float uTimeDeltaMs;
+uniform float uTrailLengthSeconds;
+
+const float EPSILON = 0.00001;
+
 
 // Given a texture with the previous drawn state
 // Before we draw new particles
 // Then the texture is dimmed to progressively erase the particles
 void main() {
-    if (! uTrailEnabled) {
+    vec4 canvasValue = texelFetch(uCanvas, ivec2(gl_FragCoord), 0);
+    if (canvasValue.a < EPSILON || uTrailLengthSeconds < EPSILON) {
         outputColor = vec4(0.0);
         return;
     }
-    vec4 canvasValue = texelFetch(uCanvas, ivec2(gl_FragCoord), 0);
-    if (canvasValue.a < 0.00001) {
-        outputColor = vec4(0.0, 0.0, 0.0, 0.0);
-        return;
-    }
-    outputColor = vec4(canvasValue.rgb, canvasValue.a - uTrailFadeSpeed);
+    outputColor = vec4(canvasValue.rgb, canvasValue.a - uTimeDeltaMs/(1000.0*uTrailLengthSeconds));
 }

@@ -117,8 +117,8 @@ const canvasPreprocessingMaterial = new THREE.ShaderMaterial({
     glslVersion: THREE.GLSL3,
     uniforms: {
         uCanvas: { value: inputDisplayRenderTarget.texture },
-        uTrailEnabled: { value: false },
-        uTrailFadeSpeed: { value: 0 },
+        uTrailLengthSeconds: { value: 0 },
+        uTimeDeltaMs: {value: 0},
     }
 });
 canvasPreprocessingScene.add(new THREE.Mesh(canvasGeometry, canvasPreprocessingMaterial));
@@ -170,8 +170,7 @@ const applyDisplayParams = () => {
     updateStateMaterial.uniforms.uFieldLacunarity.value = params.fieldLacunarity;
     updateStateMaterial.uniforms.uFieldShiftX.value = params.fieldShiftX;
     updateStateMaterial.uniforms.uFieldShiftY.value = params.fieldShiftY;
-    canvasPreprocessingMaterial.uniforms.uTrailEnabled.value = params.trailEnabled;
-    canvasPreprocessingMaterial.uniforms.uTrailFadeSpeed.value = params.trailFadeSpeed;
+    canvasPreprocessingMaterial.uniforms.uTrailLengthSeconds.value = params.trailLengthSeconds;
     drawParticleMaterial.uniforms.uPaletteLuminosity.value = paramPoint3ToVector3(params.paletteLuminosity);
     drawParticleMaterial.uniforms.uPaletteContrast.value = paramPoint3ToVector3(params.paletteContrast);
     drawParticleMaterial.uniforms.uPaletteFreq.value = paramPoint3ToVector3(params.paletteFreq);
@@ -218,6 +217,7 @@ renderer.setAnimationLoop(() => {
 
     [inputDisplayRenderTarget, outputDisplayRenderTarget] = [outputDisplayRenderTarget, inputDisplayRenderTarget];
     canvasPreprocessingMaterial.uniforms.uCanvas.value = inputDisplayRenderTarget.texture;
+    canvasPreprocessingMaterial.uniforms.uTimeDeltaMs.value = timeDelta
     renderer.setRenderTarget(outputDisplayRenderTarget);
     renderer.render(canvasPreprocessingScene, camera);
 

@@ -48,6 +48,5 @@ export const PARAMS_DEFAULT = Object.freeze({
     fieldLacunarity: 2.0,
     fieldShiftX: 0.0,
     fieldShiftY: 0.0,
-    trailEnabled: true,
-    trailFadeSpeed: 0.01,
+    trailLengthSeconds: 1.0,
 });

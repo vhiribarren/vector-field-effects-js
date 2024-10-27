@@ -58,10 +58,9 @@ export function setupGUI(params, paramUpdatedCallback, resolutionUpdatedCallback
             step: 1,
         })
         .on("change", _ev => particleCountUpdatedCallback());
-    particleFolder.addBinding(params, "trailEnabled", { label: "With trail" });
-    particleFolder.addBinding(params, "trailFadeSpeed", {
+    particleFolder.addBinding(params, "trailLengthSeconds", {
         min: 0,
-        label: "Fade speed",
+        label: "Trail length",
     });
     particleFolder.addBinding(params, "speedStep");
     particleFolder.addBinding(params, "pointSize", {
