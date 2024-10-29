@@ -40,7 +40,7 @@ export const PARAMS_DEFAULT = Object.freeze({
     palettePhase: { x: 0.5, y: 0.5, z: 0.5 },
     backgroundColor: { r: 0, g: 0, b: 0, a: 1.0 },
     randomRepositionProba: 0.1,
-    speedStep: 0.0001,
+    speedStep: 100.0,
     pointSize: isHDPI() ? 2.0 : 1.0,
     animRun: true,
     fieldFrequence: 1.0,

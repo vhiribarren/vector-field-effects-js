@@ -67,7 +67,7 @@ export function setupGUI(params, paramUpdatedCallback, resolutionUpdatedCallback
         label: "Reposition proba",
         format: (v) => v,
     });
-    particleFolder.addBinding(params, "speedStep");
+    particleFolder.addBinding(params, "speedStep", {label: "Move speed"});
     particleFolder.addBinding(params, "pointSize", {
         min: 0,
         label: "Point Size",

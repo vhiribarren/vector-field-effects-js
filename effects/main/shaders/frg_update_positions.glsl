@@ -38,7 +38,8 @@ uniform float uFieldShiftY;
 
 layout(location = 0) out vec4 outputValue;
 
-float PI = 3.14;
+const float PI = 3.14;
+const float ASSUMED_SCREEN_WIDTH = 1024.0;
 
 float random(vec2 uv) {
   return fract(sin(dot(uv.xy, vec2(12.9898, 78.233))) * 43758.5453123);
@@ -88,5 +89,5 @@ void main() {
   vec4 particlePos = shouldRandomize
     ? vec4(1.0 - 2.0*random(vec2(currentPosition.x, randomValue)), 1.0 - 2.0*random(vec2(randomValue, currentPosition.y)), 0.0, 0.0)
     : currentPosition;
-  outputValue = particlePos + vec4(vector_field(particlePos.xy), 0.0, 0.0)*uSpeedStep*uTimeDeltaMs;
+  outputValue = particlePos + vec4(vector_field(particlePos.xy), 0.0, 0.0)*(uSpeedStep/ASSUMED_SCREEN_WIDTH)*(uTimeDeltaMs /1000.0);
 }
