@@ -85,6 +85,7 @@ const updateStateMaterial = new THREE.ShaderMaterial({
         uFieldLacunarity: { value: 0 },
         uFieldShiftX: { value: 0 },
         uFieldShiftY: { value: 0 },
+        uRandomRepositionProba: { value: 0 },
     }
 });
 updateStateScene.add(new THREE.Mesh(canvasGeometry, updateStateMaterial));
@@ -170,6 +171,7 @@ const applyDisplayParams = () => {
     updateStateMaterial.uniforms.uFieldLacunarity.value = params.fieldLacunarity;
     updateStateMaterial.uniforms.uFieldShiftX.value = params.fieldShiftX;
     updateStateMaterial.uniforms.uFieldShiftY.value = params.fieldShiftY;
+    updateStateMaterial.uniforms.uRandomRepositionProba.value = params.randomRepositionProba;
     canvasPreprocessingMaterial.uniforms.uTrailLengthSeconds.value = params.trailLengthSeconds;
     drawParticleMaterial.uniforms.uPaletteLuminosity.value = paramPoint3ToVector3(params.paletteLuminosity);
     drawParticleMaterial.uniforms.uPaletteContrast.value = paramPoint3ToVector3(params.paletteContrast);

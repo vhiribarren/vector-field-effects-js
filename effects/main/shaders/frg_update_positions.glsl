@@ -24,6 +24,7 @@ SOFTWARE.
 precision highp float;
 
 uniform float uSpeedStep;
+uniform float uRandomRepositionProba;
 uniform float uTimeAccMs;
 uniform float uTimeDeltaMs;
 uniform sampler2D uPositions;
@@ -82,10 +83,10 @@ vec2 vector_field(vec2 uv) {
 // Then the texture is updated with new information 
 void main() {
   vec4 currentPosition = texelFetch(uPositions, ivec2(gl_FragCoord.x, gl_FragCoord.y), 0);
-  float randomValue = random(uTimeDeltaMs * currentPosition.xy);
-  bool shouldRandomize = randomValue < 0.01;
+  float randomValue = abs(random(uTimeDeltaMs * currentPosition.xy));
+  bool shouldRandomize = randomValue < uRandomRepositionProba * uTimeDeltaMs / 1000.0;
   vec4 particlePos = shouldRandomize
-    ? vec4(1.0 - 2.0*random(vec2(currentPosition.x, randomValue)), 1.0- 2.0*random(vec2(randomValue, currentPosition.y)), 0.0, 0.0)
+    ? vec4(1.0 - 2.0*random(vec2(currentPosition.x, randomValue)), 1.0 - 2.0*random(vec2(randomValue, currentPosition.y)), 0.0, 0.0)
     : currentPosition;
   outputValue = particlePos + vec4(vector_field(particlePos.xy), 0.0, 0.0)*uSpeedStep*uTimeDeltaMs;
 }

@@ -62,6 +62,11 @@ export function setupGUI(params, paramUpdatedCallback, resolutionUpdatedCallback
         min: 0,
         label: "Trail length",
     });
+    particleFolder.addBinding(params, "randomRepositionProba", {
+        min: 0,
+        label: "Reposition proba",
+        format: (v) => v,
+    });
     particleFolder.addBinding(params, "speedStep");
     particleFolder.addBinding(params, "pointSize", {
         min: 0,
